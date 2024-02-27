@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 
 # Your MongoDB Atlas connection string
-mongo_uri = "mongodb+srv://erenbardak:scWEeqdIh8oFZdnm@cluster0.5nawz27.mongodb.net/erenbardak?retryWrites=true&w=majority"
+mongo_uri = "YOUR-MONGO-URI"
 client = MongoClient(mongo_uri)
 
 # Format the current date as a string in the format 'YYYY-MM-DD'
