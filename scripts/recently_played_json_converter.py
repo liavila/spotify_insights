@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 import pytz
 
-PATH = Path("/Users/irerielunicornio/Documents/USF/Spring1/Distributed-Data-Systems/Final Project/scripts")
+PATH = Path("CHANGE-TO-YOUR-LOCAL-DIRECTORY")
 
 # Load the JSON data
 with open(PATH/'recently_played_data.json', 'r', encoding='utf-8') as f:
