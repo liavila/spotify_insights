@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /Users/irerielunicornio/Documents/USF/Spring1/Distributed-Data-Systems/Final\ Project/scripts
+cd CHANGE-TO-YOUR-LOCAL-DIRECTORY-WHERE-SCRIPTS-ARE-LOCATED
 
 # Run spotify_script.py
 python data_fetcher.py
