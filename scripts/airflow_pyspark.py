@@ -12,7 +12,7 @@ default_args = {
 CLUSTER_NAME = 'airflow-pyspark-cluster'
 REGION='us-central1'
 PROJECT_ID='YOUR_PROJECT_ID'
-PYSPARK_URI='gs://BUCKET_NAME/spotify_pyspark.py'
+PYSPARK_URI='gs://BUCKET_NAME/pyspark_job.py'
 
 
 CLUSTER_CONFIG = {
