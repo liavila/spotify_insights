@@ -19,7 +19,7 @@ def download_scripts_from_gcs(bucket_name, scripts_info):
 
 def upload_to_gcs():
     # Connect to MongoDB
-    mongo_uri = "mongodb+srv://GCS_mongodb:hglzugWJTguxZpnH@spotify-dds2024.1nnkx.mongodb.net/?retryWrites=true&w=majority&appName=Spotify-dds2024"
+    mongo_uri = "REPLACE WITH MONGO URI"
     client = MongoClient(mongo_uri)
     db = client['Spotify-dds2024']
     collection = db['Albums']
