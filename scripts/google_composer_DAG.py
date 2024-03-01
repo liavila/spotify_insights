@@ -2,7 +2,10 @@ from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.bash_operator import BashOperator
+from google.cloud import storage
 from datetime import datetime
+from pymongo import MongoClient
+import json
 
 def download_scripts_from_gcs(bucket_name, scripts_info):
     """
@@ -13,6 +16,25 @@ def download_scripts_from_gcs(bucket_name, scripts_info):
     for object_name, download_path in scripts_info:
         hook.download(bucket_name=bucket_name, object_name=object_name, filename=download_path)
         print(f"Downloaded {object_name} from {bucket_name} to {download_path}")
+
+def upload_to_gcs():
+    # Connect to MongoDB
+    mongo_uri = "mongodb+srv://GCS_mongodb:hglzugWJTguxZpnH@spotify-dds2024.1nnkx.mongodb.net/?retryWrites=true&w=majority&appName=Spotify-dds2024"
+    client = MongoClient(mongo_uri)
+    db = client['Spotify-dds2024']
+    collection = db['Albums']
+
+    # Retrieve data from MongoDB collection
+    data = list(collection.find())
+
+    # Initialize GCS client
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket('spotify_jsons_for_mongodbatlas')
+
+    # Create GCS object and upload data
+    name = 'Albums_collection'
+    gcs_blob = bucket.blob(f'/pyspark/{name}')
+    gcs_blob.upload_from_string(json.dumps(data), content_type="application/json")
 
 
 gcs_bucket_dag = 'us-west1-spotify-dds2024-096270d6-bucket'
@@ -71,6 +93,12 @@ with DAG('run_scripts_from_gcs',
         bash_command='python /home/airflow/gcs/data/create_collections_top_tracks.py '
     )
 
+    upload_to_gcs_task = PythonOperator(
+        task_id='upload_to_gcs_task',
+        python_callable=upload_to_gcs,
+        dag=dag,
+    )
 
-    download_all_scripts >> execute_data_fetching_script >> execute_recently_played_processing >> execute_top_tracks_processing >> execute_data_upload >> execute_recently_played_collection >> execute_top_tracks_collection
+
+    download_all_scripts >> execute_data_fetching_script >> [execute_recently_played_processing, execute_top_tracks_processing] >> execute_data_upload >> [execute_recently_played_collection, execute_top_tracks_collection] >> upload_to_gcs_task
 
