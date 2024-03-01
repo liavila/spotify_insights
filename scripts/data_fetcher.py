@@ -1,5 +1,7 @@
 import json
 from spotipy.oauth2 import SpotifyOAuth
+from google.cloud import storage
+from airflow.providers.google.cloud.hooks.gcs import GCSHook
 import spotipy
 from dotenv import load_dotenv
 from pathlib import Path
@@ -12,11 +14,24 @@ client_id = os.getenv('SPOTIPY_CLIENT_ID')
 client_secret = os.getenv('SPOTIPY_CLIENT_SECRET')
 redirect_uri = os.getenv('SPOTIPY_REDIRECT_URI')
 
-PATH = Path("/Users/irerielunicornio/Documents/USF/Spring1/Distributed-Data-Systems/Final Project/scripts")
+gcs_bucket_dag = 'us-west1-spotify-dds2024-096270d6-bucket'
+storage_client = storage.Client()
+
+# PATH = Path("/Users/irerielunicornio/Documents/USF/Spring1/Distributed-Data-Systems/Final Project/scripts")
+
+# def load_user_tokens():
+#     with open("user_information.json") as file:
+#         return json.load(file)
 
 def load_user_tokens():
-    with open("user_information.json") as file:
-        return json.load(file)
+    # Initialize GCS hook
+    gcs_hook = GCSHook()
+
+    # Download file content as a string
+    file_content = gcs_hook.download(bucket_name=gcs_bucket_dag, object_name="data/user_information.json")
+
+    # Parse the JSON string and return the data
+    return json.loads(file_content)
 
 
 def refresh_access_token(user_info, client_id, redirect_uri):
@@ -85,6 +100,18 @@ def get_top_tracks(sp):
 
     return top_tracks
 
+def create_and_upload_json(bucket_name, destination_blob_name, data_contents):
+    """Creates a file and uploads it to the specified GCS bucket."""
+    json_file = json.dumps(data_contents, indent=4)
+    destination_path = f"""data/{destination_blob_name}"""
+
+    # Get the bucket object
+    bucket = storage_client.bucket(bucket_name)
+
+    # Create a new blob and upload the file's content
+    blob = bucket.blob(destination_path)
+    blob.upload_from_string(json_file)
+    print(f"File uploaded to {bucket_name}/{destination_path}.")
 
 def main():
     tokens = load_user_tokens()
@@ -92,6 +119,7 @@ def main():
     redirect_uri = os.getenv('REDIRECT_URI')
     recently_played_data = []
     top_tracks_data = []
+    audio_features_data = []
 
     for user in tokens:
         current_time = int(time.time())
@@ -126,17 +154,21 @@ def main():
 
     # SAVE A NEW FILE EVERY TIME?
 
+    create_and_upload_json(gcs_bucket_dag, "recently_played_data.json", recently_played_data)
+    create_and_upload_json(gcs_bucket_dag, "top_tracks_data.json", top_tracks_data)
+    create_and_upload_json(gcs_bucket_dag, "user_information.json", tokens)
+
     # Save the recently played data to a JSON file
-    with open(PATH/'recently_played_data.json', 'w') as file:
-        json.dump(recently_played_data, file, indent=4)
+    # with open(PATH/'recently_played_data.json', 'w') as file:
+    #     json.dump(recently_played_data, file, indent=4)
 
-    # Save the top tracks data to a JSON file
-    with open(PATH/'top_tracks_data.json', 'w') as file:
-        json.dump(top_tracks_data, file, indent=4)
+    # # Save the top tracks data to a JSON file
+    # with open(PATH/'top_tracks_data.json', 'w') as file:
+    #     json.dump(top_tracks_data, file, indent=4)
 
-    # Update the original tokens with the refreshed information
-    with open(PATH/'user_information.json', 'w') as file:
-        json.dump(tokens, file, indent=4)
+    # # Update the original tokens with the refreshed information
+    # with open(PATH/'user_information.json', 'w') as file:
+    #     json.dump(tokens, file, indent=4)
 
     print('Data has been fetched and saved to recently_played_data.json and top_tracks_data.json')
 

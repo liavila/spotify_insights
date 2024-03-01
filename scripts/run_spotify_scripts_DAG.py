@@ -7,7 +7,7 @@ from airflow.utils.dates import days_ago
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'email_on_failure': True,
+    'email_on_failure': False,
     'email_on_retry': False,
     'retries': 2,
     'retry_delay': timedelta(minutes=5),
@@ -26,7 +26,7 @@ dag = DAG(
 # Define the task to run your shell script
 run_script = BashOperator(
     task_id='run_my_shell_script',
-    bash_command='sh FILE-PATH-TO-MAIN.SH ',
+    bash_command='sh /Users/irerielunicornio/Documents/USF/Spring1/Distributed-Data-Systems/Final\ Project/scripts/main_script.sh ',
     dag=dag,
 )
 

@@ -1,17 +1,47 @@
 import json
 from datetime import datetime, timedelta
+from google.cloud import storage
+from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from dotenv import load_dotenv
 from pathlib import Path
 import re
 import pytz
 
-PATH = Path("CHANGE-TO-YOUR-LOCAL-DIRECTORY")
+# PATH = Path("/Users/irerielunicornio/Documents/USF/Spring1/Distributed-Data-Systems/Final Project/scripts")
 
-# Load the JSON data
-with open(PATH/'recently_played_data.json', 'r', encoding='utf-8') as f:
-    data = json.load(f)
+# # Load the JSON data
+# with open(PATH/'recently_played_data.json', 'r', encoding='utf-8') as f:
+#     data = json.load(f)
+    
 
 # Function to clean song names
+gcs_bucket_dag = 'us-west1-spotify-dds2024-096270d6-bucket'
+gcs_bucket_processed = 'spotify_jsons_for_mongodbatlas'
+storage_client = storage.Client()
+    
+def load_json():
+    # Initialize GCS hook
+    gcs_hook = GCSHook()
+
+    # Download file content as a string
+    file_content = gcs_hook.download(bucket_name=gcs_bucket_dag, object_name="data/recently_played_data.json")
+
+    # Parse the JSON string and return the data
+    return json.loads(file_content)
+
+def create_and_upload_json(bucket_name, destination_blob_name, data_contents):
+    """Creates a file and uploads it to the specified GCS bucket."""
+    json_file = json.dumps(data_contents, indent=4)
+    destination_path = f"""data/{destination_blob_name}"""
+
+    # Get the bucket object
+    bucket = storage_client.bucket(bucket_name)
+
+    # Create a new blob and upload the file's content
+    blob = bucket.blob(destination_path)
+    blob.upload_from_string(json_file)
+    print(f"File uploaded to {bucket_name}/{destination_path}.")
+
 
 
 def clean_song_name(song_name):
@@ -19,6 +49,7 @@ def clean_song_name(song_name):
     match = re.match(r"^[^\(\[\{]*", song_name)
     return match.group(0).strip() if match else song_name
 
+data = load_json()
 
 # Process the data
 processed_data = []
@@ -88,8 +119,10 @@ today_date_str = datetime.now().strftime('%Y-%m-%d')
 # Include the date in the filename
 filename = f'processed_recently_played_data_{today_date_str}.json'
 
-# Save the processed data to a new JSON file
-with open(PATH/filename, 'w', encoding='utf-8') as f:
-    json.dump(processed_data, f, indent=4)
+# # Save the processed data to a new JSON file
+# with open(PATH/filename, 'w', encoding='utf-8') as f:
+#     json.dump(processed_data, f, indent=4)
+
+create_and_upload_json(gcs_bucket_processed, filename, processed_data)
 
 print(f"Processed data saved to {filename}")
