@@ -87,7 +87,7 @@ This streamlined workflow in Google Cloud Composer ensures a consistent, automat
 Use PySpark's powerful data processing capabilities combined with MongoDB's storage to craft dynamic dashboards and visualizations.
 
 <p align="center">
-  <kbd><img src="images/viz.png" width=500></img></kbd>
+  <kbd><img src="images/viz.png" width=600></img></kbd>
 </p>
 <p align="center"><em>Figure 5: Analyzing the Evolution of Authors' Soundscapes: Unveiling Insights from Track Histories and Audio Features</a></em></p>
 
