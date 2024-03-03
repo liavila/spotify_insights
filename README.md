@@ -59,6 +59,11 @@ After connecting to the Spotify API, we created a Google Cloud account, set up a
 
 ## Step 3: Implement MongoDB Script Workflows in Google Cloud Composer
 
+<p align="center">
+  <kbd><img src="images/composer.png" width=500></img></kbd>
+</p>
+<p align="center"><em>Figure 3: MongoDB Script Workflow</a></em></p>
+
 Then, we uploaded the scripts in Figure 4 to Google Cloud Composer to set up the automated data pipeline. The process starts with the main_script.sh, which is the workflow's driver, triggering other scripts for specific tasks:
 1. The Data Fetcher script (`data_fetcher.py`) is first, connecting to Spotify's API to pull user data, ensuring that the data is fetched accurately and efficiently, handling any API limitations or data paging requirements.
 2. Once the Spotify data is retrieved, the workflow advances to processing with `recently_played_json_converter.py` and `top_tracks_json_converter.py`. These scripts convert song durations to minutes:seconds, align timestamps to Pacific Time, and reformat the data for ease of analysis, discarding irrelevant market data. 
@@ -70,14 +75,14 @@ This streamlined workflow in Google Cloud Composer ensures a consistent, automat
 <p align="center">
   <kbd><img src="images/composer.png" width=500></img></kbd>
 </p>
-<p align="center"><em>Figure 3: Screenshot of the Google Cloud Composer</a></em></p>
+<p align="center"><em>Figure 4: Screenshot of the Google Cloud Composer</a></em></p>
 
 ## Step 4: Integrate PySpark and MongoDB for Data Visualization
 
 <p align="center">
   <kbd><img src="images/dag_grid.png" width=500></img></kbd>
 </p>
-<p align="center"><em>Figure 4: Grid View of the DAG runs</a></em></p>
+<p align="center"><em>Figure 5: Grid View of the DAG runs</a></em></p>
 
 1. **Upload MongoDB Collections to Google Cloud Storage (GCS)**: In this initial phase, the integration process is initiated through a Directed Acyclic Graph (DAG) script. The script serves as an orchestrator, delineating tasks and dependencies for a streamlined workflow. After connecting to MongoDB and extracting relevant data from specified collections, the script seamlessly uploads the dataset to Google Cloud Storage (GCS). This step ensures the data's accessibility for subsequent PySpark processing tasks, fostering a cohesive data flow across the cloud ecosystem.
 
@@ -89,7 +94,7 @@ Use PySpark's powerful data processing capabilities combined with MongoDB's stor
 <p align="center">
   <kbd><img src="images/viz.png" width=600></img></kbd>
 </p>
-<p align="center"><em>Figure 5: Analyzing the Evolution of Authors' Soundscapes: Unveiling Insights from Track Histories and Audio Features</a></em></p>
+<p align="center"><em>Figure 6: Analyzing the Evolution of Authors' Soundscapes: Unveiling Insights from Track Histories and Audio Features</a></em></p>
 
 
 
