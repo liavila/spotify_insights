@@ -54,8 +54,7 @@ If we want to avoid having to re-authenticate every 60 days, we can use the [Aut
 ## Step 2: Set Up Google Cloud Composer Environment and MongoDB Cluster
 
 After connecting to the Spotify API, we created a Google Cloud account, set up an environment in Google Cloud Composer, and defined the necessary libraries. Additionally, we established a MongoDB Atlas cluster to store the data retrieved from Spotify, preparing for a script-based data upload.
-
-
+As a first step for running scripts through Google Cloud Composer, we uploaded our scripts into a bucket and using GCC we downloaded the scripts from the bucket into the Airflow environment inside of GCC for them to be able to run during the DAG.
 
 ## Step 3: Implement MongoDB Script Workflows in Google Cloud Composer
 
