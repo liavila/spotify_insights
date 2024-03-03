@@ -1,4 +1,5 @@
 from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
 from subprocess import call
 
 # Install Python packages
@@ -11,22 +12,59 @@ import plotly.io as pio
 from google.cloud import storage
 from io import BytesIO
 
+# image_url = 'gs://msds697_final_project/piano.png'
+
 # Initialize Spark session
 spark = SparkSession.builder.appName("PlotlyOnDataproc").getOrCreate()
 
-# Sample data for each feature for five observations
-data = [
-    (1, "Jessica", 0.8, -5, 0.2, 0.5, 0.3, 0.7, 120),
-    (2, "Ireri", 0.5, -8, 0.2, 0.3, 0.6, 0.5, 100),
-    (3, "Yihan", 0.2, -3, 0.6, 0.8, 0.4, 0.8, 140),
-    (4, "Eren", 0.7, -6, 0.4, 0.2, 0.5, 0.6, 105),
-    (5, "Bhumika", 0.4, -7, 0.1, 0.9, 0.2, 0.9, 115),
-]
+df = spark.read.json("gs://spotify_jsons_for_mongodbatlas/pyspark/Albums_collection")
 
-columns = ["Observation", "Name", "Speechiness", "Loudness", "Acousticness", "Instrumentalness", "Liveness", "Valence", "Tempo"]
+
+def min_max_normalize_tuple(tpl):
+    normalized_tpl = []
+
+    # Filter numeric values
+    numeric_values = [val for val in tpl if isinstance(val, (int, float))]
+
+    if numeric_values:
+        # Calculate min and max only for numeric values
+        min_val = min(numeric_values)
+        max_val = max(numeric_values)
+
+        # Avoid division by zero
+        if max_val - min_val != 0:
+            normalized_tpl = [(val - min_val) / (max_val - min_val) if isinstance(val, (int, float)) else val for val in tpl]
+        else:
+            # Handle the case when all numeric values in the tuple are the same
+            normalized_tpl = [0.0 if isinstance(val, (int, float)) else val for val in tpl]
+    else:
+        # If there are no numeric values in the tuple, keep it unchanged
+        normalized_tpl = tpl
+
+    return tuple(normalized_tpl)
+
+
+# Aggregate the data
+new_df = df.groupBy("user_name"). \
+    agg(F.mean("loudness").alias("loudness"),
+        F.mean("energy").alias("energy"),
+        F.mean("speechiness").alias("speechiness"),
+        F.mean("acousticness").alias("acousticness"),
+        F.mean("instrumentalness").alias("instrumentalness"),
+        F.mean("liveness").alias("liveness"),
+        F.mean("valence").alias("valence"))
+new_df = new_df.withColumn("index", F.monotonically_increasing_id())
+new_df = new_df.select("index", "user_name", "speechiness", "loudness", "acousticness", "instrumentalness", "liveness", "valence", "energy")
+rows = new_df.collect()
+data = [tuple(row) for row in rows]
+
+# Normalize the data
+normalized_data = [min_max_normalize_tuple(tpl) for tpl in data]
+
+columns = ["Observation", "Name", "Speechiness", "Loudness", "Acousticness", "Instrumentalness", "Liveness", "Valence", "Energy"]
 
 # Create a PySpark DataFrame
-df = spark.createDataFrame(data, columns)
+df = spark.createDataFrame(normalized_data, columns)
 
 # Convert PySpark DataFrame to Pandas DataFrame for visualization
 pandas_df = df.toPandas()
@@ -36,13 +74,36 @@ fig = make_subplots(rows=2, cols=3,
                     specs=[[{'type': 'polar'}, {'type': 'polar'}, {'type': 'polar'}],
                            [{'type': 'polar'}, {'type': 'polar'}, {'type': 'polar'}]])
 
-for i in range(5):
-    fig.add_trace(go.Scatterpolar(
-        r=pandas_df.iloc[i, 2:],
-        theta=df.columns[2:],
-        fill='toself',
-        name=pandas_df.iloc[i, 1]
-    ), row=(i // 3) + 1, col=(i % 3) + 1)
+fig.add_trace(go.Scatterpolar(
+    r=pandas_df.iloc[0, 2:],
+    theta=df.columns[2:],
+    fill='toself'
+), row=1, col=1)
+
+fig.add_trace(go.Scatterpolar(
+    r=pandas_df.iloc[1, 2:],
+    theta=df.columns[2:],
+    fill='toself'
+), row=1, col=2)
+
+fig.add_trace(go.Scatterpolar(
+    r=pandas_df.iloc[2, 2:],
+    theta=df.columns[2:],
+    fill='toself'
+), row=1, col=3)
+
+fig.add_trace(go.Scatterpolar(
+    r=pandas_df.iloc[3, 2:],
+    theta=df.columns[2:],
+    fill='toself'
+), row=2, col=1)
+
+fig.add_trace(go.Scatterpolar(
+    r=pandas_df.iloc[4, 2:],
+    theta=df.columns[2:],
+    fill='toself'
+), row=2, col=2)
+
 
 # Update layout for better visualization
 fig.update_layout(
@@ -58,9 +119,12 @@ fig.update_layout(
     paper_bgcolor='lightgray'
 )
 
-# Update polar axis range for each subplot
-for i in range(1, 6):
-    fig.update_polars(dict(radialaxis=dict(range=[-10, 1])), row=(i // 3) + 1, col=(i % 3) + 1)
+fig.update_polars(dict(radialaxis=dict(range=[0, 1])), row=1, col=1)
+fig.update_polars(dict(radialaxis=dict(range=[0, 1])), row=1, col=2)
+fig.update_polars(dict(radialaxis=dict(range=[0, 1])), row=1, col=3)
+fig.update_polars(dict(radialaxis=dict(range=[0, 1])), row=2, col=1)
+fig.update_polars(dict(radialaxis=dict(range=[0, 1])), row=2, col=2)
+
 
 # Update annotations
 feature_description = ['<b>Speechiness:</b> The presence of spoken words in a track',
@@ -69,14 +133,14 @@ feature_description = ['<b>Speechiness:</b> The presence of spoken words in a tr
                             '<b>Instrumentalness:</b> Predicts whether a track contains no vocals',
                             '<b>Liveness:</b> Detects the presence of an audience in the recording',
                             '<b>Valence:</b> Describes the musical positiveness conveyed by a track',
-                            '<b>Tempo:</b> The overall estimated tempo of a track in BPM']
+                            '<b>Energy:</b> Represents a perceptual measure of intensity and activity']
 
 
-annotations=[dict(text='<b>Jessica</b>', x=0.125, y=1.07, showarrow=False, xref='paper', yref='paper', font=dict(size=20)),
+annotations=[dict(text='<b>Bhumika</b>', x=0.125, y=1.07, showarrow=False, xref='paper', yref='paper', font=dict(size=20)),
             dict(text='<b>Ireri</b>', x=0.5, y=1.07, showarrow=False, xref='paper', yref='paper', font=dict(size=20)),
-            dict(text='<b>Yihan</b>', x=0.85, y=1.07, showarrow=False, xref='paper', yref='paper', font=dict(size=20)),
+            dict(text='<b>Jessica</b>', x=0.85, y=1.07, showarrow=False, xref='paper', yref='paper', font=dict(size=20)),
             dict(text='<b>Eren</b>', x=0.135, y=0.48, showarrow=False, xref='paper', yref='paper', font=dict(size=20)),
-            dict(text='<b>Bhumika</b>', x=0.5, y=0.48, showarrow=False, xref='paper', yref='paper', font=dict(size=20))
+            dict(text='<b>Yihan</b>', x=0.5, y=0.48, showarrow=False, xref='paper', yref='paper', font=dict(size=20))
             ]
 
 annotations.append(
@@ -135,7 +199,7 @@ annotations.append(
 
 annotations.append(
     dict(text=feature_description[6],
-         x=1.0, y=0.03,
+         x=1.03, y=0.03,
          showarrow=False,
          xref='paper', yref='paper',
          font=dict(size=17, color='black', family='Courier New')
@@ -151,30 +215,37 @@ annotations.append(
          )
 )
 
+annotations.append(
+    dict(text="<b>Spotify Insights</b>",
+         x=0.93, y=0.3,
+         showarrow=False,
+         xref='paper', yref='paper',
+         font=dict(size=30, color='black', family='Courier New')
+         )
+)
+
 
 fig.update_layout(annotations=annotations)
 
-image_url = 'piano.png'
+# fig.add_layout_image(
+#     dict(
+#         source=image_url,
+#         xref="paper", yref="paper",
+#         x=0.77, y=0.2,
+#         sizex=0.05, sizey=0.05,
+#         xanchor="center", yanchor="middle",
+#     )
+# )
 
-fig.add_layout_image(
-    dict(
-        source=image_url,
-        xref="paper", yref="paper",
-        x=0.77, y=0.2,
-        sizex=0.05, sizey=0.05,
-        xanchor="center", yanchor="middle",
-    )
-)
-
-fig.add_layout_image(
-    dict(
-        source=image_url,
-        xref="paper", yref="paper",
-        x=0.93, y=0.2,
-        sizex=0.05, sizey=0.05,
-        xanchor="center", yanchor="middle",
-    )
-)
+# fig.add_layout_image(
+#     dict(
+#         source=image_url,
+#         xref="paper", yref="paper",
+#         x=0.93, y=0.2,
+#         sizex=0.05, sizey=0.05,
+#         xanchor="center", yanchor="middle",
+#     )
+# )
 
 # Show the figure
 # fig.show()
@@ -185,7 +256,7 @@ pio.write_image(fig, img_bytes, format='png')
 img_bytes.seek(0)
 
 client = storage.Client()
-bucket = client.bucket('msds697_final_project')
+bucket = client.bucket('spotify_jsons_for_mongodbatlas')
 blob = bucket.blob('radar_chart.png')
 blob.upload_from_file(img_bytes, content_type='image/png')
 
