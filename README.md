@@ -64,10 +64,10 @@ After connecting to the Spotify API, we created a Google Cloud account, set up a
 </p>
 <p align="center"><em>Figure 3: MongoDB Script Workflow</a></em></p>
 
-Then, we uploaded the scripts in Figure 3 to Google Cloud Composer to set up the automated data pipeline. The process starts with the main_script.sh, which is the workflow's driver, triggering other scripts for specific tasks:
-1. The Data Fetcher script (`data_fetcher.py`) is first, connecting to Spotify's API to pull user data, ensuring that the data is fetched accurately and efficiently, handling any API limitations or data paging requirements.
+Then, we uploaded the scripts in Figure 3 to Google Cloud Composer to set up the automated data pipeline. The process starts with the `data_fetcher.py` script, which is the starting point for data retrieval and then triggering other scripts for specific tasks after completion. The whole pipeline is as follows:
+1. The Data Fetcher script (`data_fetcher.py`) is first, connecting to Spotify's API to pull user data, ensuring that the data is fetched accurately and efficiently, handling any API limitations or data paging requirements. This also includes account access approval for all members in group.
 2. Once the Spotify data is retrieved, the workflow advances to processing with `recently_played_json_converter.py` and `top_tracks_json_converter.py`. These scripts convert song durations to minutes:seconds, align timestamps to Pacific Time, and reformat the data for ease of analysis, discarding irrelevant market data. 
-3. The `data_upload.py` script uploads the data to a MongoDB cluster, forming two main collections: rawdata_recentlyplayed and rawdata_toptracks.
+3. The `data_upload.py` script connects and uploads the data to a MongoDB Atlas cluster, forming two main collections: rawdata_recentlyplayed and rawdata_toptracks.
 4. Further refinement is done by `create_collections_recently_played.py` and  `create_collections_top_tracks.py`, establishing specialized MongoDB collections to facilitate various analyses. These schemas capture song metadata, track details, album information, artist data, and images, with specific collections like **t50_artists**, **t50_Images**, and **t50_Tracks** for top tracks' data.  
 
 This streamlined workflow in Google Cloud Composer ensures a consistent, automated process for data handling, setting the stage for advanced analytics.
