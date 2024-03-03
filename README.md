@@ -60,7 +60,7 @@ After connecting to the Spotify API, we created a Google Cloud account, set up a
 ## Step 3: Implement MongoDB Script Workflows in Google Cloud Composer
 
 <p align="center">
-  <kbd><img src="images/composer.png" width=500></img></kbd>
+  <kbd><img src="images/script_workflows.png" width=500></img></kbd>
 </p>
 <p align="center"><em>Figure 3: MongoDB Script Workflow</a></em></p>
 
