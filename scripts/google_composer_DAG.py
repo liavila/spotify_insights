@@ -93,7 +93,6 @@ with DAG('run_scripts_from_gcs',
         op_kwargs={
             'bucket_name': gcs_bucket_dag,
             'scripts_info': [
-                ('scripts/main_script.sh', '/home/airflow/gcs/data/main_script.sh'),
                 ('scripts/data_fetcher.py', '/home/airflow/gcs/data/data_fetcher.py'),
                 ('scripts/recently_played_json_converter.py', '/home/airflow/gcs/data/recently_played_json_converter.py'),
                 ('scripts/top_tracks_json_converter.py', '/home/airflow/gcs/data/top_tracks_json_converter.py'),
