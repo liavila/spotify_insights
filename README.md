@@ -1,17 +1,12 @@
 # Distributed Data Processing with Apache Airflow, MongoDB, and SparkSQL
 
-## Approach / Tentative Outline
+**Tech Stack:** Apache Airflow, Google Cloud Platform, MongoDB Atlas, Python, SparkSQL, Spotify API.
 
-**Proposal**: Develop a data pipeline in Airflow that can be used to build an application to work as a localized social media platform for small groups of friends. The application will allow users to connect their Spotify accounts and share their listening history. We perform analytics on the data to determine who listened to what the most, and who listened to the same songs the most, and other analytics based on the original datasets.
+> ## Initital Proposal:
+> 
+> *Develop a data pipeline in Airflow that can be used to build an application to work as a localized social media platform for small groups of friends. The application will allow users to connect their Spotify accounts and share their listening history. We perform analytics on the data to determine who listened to what the most, and who listened to the same songs the most, and other analytics based on the original datasets.*
 
-**Tech Stack:** Apache Airflow, MongoDB, SparkSQL, Google Cloud Platform, Spotify API, Python, PyMongo, Spotipy, SparkML, MongoDB Atlas, Flask, Jinja2.
-
-Use Airflow to orchestrate the following tasks via CRON jobs or other scheduling methods:
-
-<p align="center">
-  <kbd><img src="images/entire_worflow.png" width=400></img></kbd>
-</p>
-<p align="center"><em>Figure 1: Workflow Graph from the Airflow UI on Google Composer</a></em></p>
+### Approach / Tentative Outline
 
 1. Use the script to connect to the Spotify API and collect data user's in a friend group.
 2. Load the data into Google Cloud Storage (GCS)
@@ -24,21 +19,28 @@ Use Airflow to orchestrate the following tasks via CRON jobs or other scheduling
 9. (Optional) Use a recommendation system to recommend songs to users based on their group listening history, via SparkSQL / SparkML.
 10. Refresh a dashboard with the latest data from MongoDB Atlas, using Flask and Jinja2 (Future)
 
+### Formative Steps
 
-## Prerequisites: Connect to Spotify API for data collection
+Use Airflow to orchestrate the following tasks via CRON jobs or other scheduling methods:
+
+<p align="center">
+  <kbd><img src="images/entire_worflow.png" width=400></img></kbd>
+</p>
+<p align="center"><em>Figure 1: Workflow Graph from the Airflow UI on Google Composer</a></em></p>
+
+
+## Prerequisite: Connect to Spotify API for data collection
 
 There is a library in Python called [Spotipy](https://spotipy.readthedocs.io/en/2.22.1/) that can be used to connect to the Spotify API. This is a lightweight Python library for the Spotify Web API. It includes support for all the features of the Spotify Web API including access to all end points, and support for user authorization.
 
-Spohttps://spotipy.readthedocs.io/en/2.22.1/
+The access token is a string which contains the credentials and permissions that can be used to access a given resource (e.g artists, albums or tracks) or user's data (e.g your profile or your playlists). Your application requests authorization to access service resources from the user and the service then issues access tokens to the application. Note that the access token is valid for 1 hour (3600 seconds). After that time, the token expires and you need to request a new one.
 
-#### Security Considerations
+We were able to avoid having to re-authenticate every 60 days though the implementation of an  [Authorization Code Flow](https://developer.spotify.com/documentation/web-api/tutorials/code-flow). By using `Oauth2` authorization,
+a refresh token is returned along with the access token. The refresh token is used to get a new access token when it expires.
 
-- **Securely store credentials** (client ID, client secret, access, and refresh tokens) to prevent unauthorized access.
-- **Use HTTPS** for redirect URIs to protect sensitive data during the OAuth flow.
-- **Implement CSRF protection** by validating a state parameter during the authentication callback to prevent CSRF attacks.
-- **Sanitize user input** and external API data to avoid XSS and injection attacks.
-- **Handle token expiry** by implementing a system to refresh tokens automatically without user intervention.
-- **Implement error handling** for expired tokens and API errors, including Spotify’s rate limiting.
+#### A Note on Security Considerations:
+
+*Credentials (in our case client ID, client secret, access, and refresh tokens) should always be securely stored to prevent unauthorized access. We used the `os` library to store these credentials as environment variables, and accessed them in our scripts without the need to hardcode them.*
 
 ## Step 1: Use the script to connect to the Spotify API and collect data
 
@@ -47,9 +49,7 @@ Spohttps://spotipy.readthedocs.io/en/2.22.1/
 </p>
 <p align="center"><em>Figure 2: Glimpse of the DAG</a></em></p>
 
-The access token is a string which contains the credentials and permissions that can be used to access a given resource (e.g artists, albums or tracks) or user's data (e.g your profile or your playlists). Your application requests authorization to access service resources from the user and the service then issues access tokens to the application. Note that the access token is valid for 1 hour (3600 seconds). After that time, the token expires and you need to request a new one. If we use the `spotipy` library, it will handle the token refresh for us. After 60 days the refresh token will expire and the user will need to re-authenticate. There is a `prompt_for_user_token` method in the `spotipy` library that can be used to get the access token. 
 
-If we want to avoid having to re-authenticate every 60 days, we can use the [Authorization Code Flow with Proof Key for Code Exchange (PKCE)](https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow) to get a refresh token. This method is suitable for mobile and desktop applications. It is recommended for applications that cannot store the client secret securely. Or we can use the [Authorization Code Flow](https://developer.spotify.com/documentation/web-api/tutorials/code-flow) to get a refresh token. This method is suitable for web applications. It is recommended for applications that can store the client secret securely.
 
 ## Step 2: Set Up Google Cloud Composer Environment and MongoDB Cluster
 
@@ -95,11 +95,10 @@ Use PySpark's powerful data processing capabilities combined with MongoDB's stor
 </p>
 <p align="center"><em>Figure 6: Analyzing the Evolution of Authors' Soundscapes: Unveiling Insights from Track Histories and Audio Features</a></em></p>
 
+## The Finished Product: A Dynamic Dashboard for Music Insights
 
+We implemented a fully automated data pipeline was created in Apache Airflow, leveraging Google Cloud Composer, MongoDB Atlas, and PySpark for distributed data processing. As a result, we were able to create an interactive dashboard using MongoDB Atlas Charts which visualizes the listening history of users in a friend group, providing insights into their music preferences and listening habits.
 
-
-
-
-
-
-
+<p align="center">
+  <kbd><img src="images//SpotifyWeeklyRecap.png" width=600></img></kbd>
+</p><p align="center"><em>Figure 7: A Dynamic Dashboard To Share Music Taste with Friends</a></em></p></a></em></p>
