@@ -42,7 +42,9 @@ a refresh token is returned along with the access token. The refresh token is us
 
 *Credentials (in our case client ID, client secret, access, and refresh tokens) should always be securely stored to prevent unauthorized access. We used the `os` library to store these credentials as environment variables, and accessed them in our scripts without the need to hardcode them.*
 
-## Step 1: Use the script to connect to the Spotify API and collect data
+## Step 1: Create DAG to run scripts to connect to the Spotify API and run pipeline
+
+The DAG was created to run on Google Cloud Composer, schedule was set up for running daily at 8am UTC. Credentials needed were added and tasks were set for the execution of the scripts. To reduce complexity, `BashOperator()` was used to run python scripts.
 
 <p align="center">
   <kbd><img src="images/dag_sample.png" width=500></img></kbd>
