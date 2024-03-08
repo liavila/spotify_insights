@@ -4,7 +4,7 @@
 
 > ## Initital Proposal:
 > 
-> *Develop a data pipeline in Airflow that can be used to build an application to work as a localized social media platform for small groups of friends. The application will allow users to connect their Spotify accounts and share their listening history. We perform analytics on the data to determine who listened to what the most, and who listened to the same songs the most, and other analytics based on the original datasets.*
+> *Develop a data pipeline in Airflow that can be used to build an application to work as a social media platform for small groups of friends. The application will allow users to connect their Spotify accounts and share their listening history. We perform analytics on the data to determine who listened to what the most, and who listened to the same songs the most, and other analytics based on the original datasets.*
 
 ### Approach / Tentative Outline
 
@@ -16,8 +16,7 @@
 6. Query the data using MongoDB / NoSQL queries.
 7. Create Dataframes from the data from MongoDB Atlas.
 8. Run SparkSQL queries (Dataproc Cluster) over the data frames.
-9. (Optional) Use a recommendation system to recommend songs to users based on their group listening history, via SparkSQL / SparkML.
-10. Refresh a dashboard with the latest data from MongoDB Atlas, using Flask and Jinja2 (Future)
+9. Regularly refresh a dashboard with the latest data from MongoDB Atlas.
 
 ### Formative Steps
 
