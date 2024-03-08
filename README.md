@@ -2,8 +2,6 @@
 
 **Tech Stack:** Apache Airflow, Google Cloud Platform, MongoDB Atlas, Python, SparkSQL, Spotify API.
 
----
-
 > ## Initital Proposal:
 > 
 > *Develop a data pipeline in Airflow that can be used to build an application to work as a localized social media platform for small groups of friends. The application will allow users to connect their Spotify accounts and share their listening history. We perform analytics on the data to determine who listened to what the most, and who listened to the same songs the most, and other analytics based on the original datasets.*
