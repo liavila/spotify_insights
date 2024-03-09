@@ -96,10 +96,12 @@ Use PySpark's powerful data processing capabilities combined with MongoDB's stor
 </p>
 <p align="center"><em>Figure 6: Analyzing the Evolution of Authors' Soundscapes: Unveiling Insights from Track Histories and Audio Features</a></em></p>
 
-## The Finished Product: A Dynamic Dashboard for Music Insights
+## The Finished Product: A Dynamic Dashboard for Sharing Music Taste with Friends
 
-We implemented a fully automated data pipeline was created in Apache Airflow, leveraging Google Cloud Composer, MongoDB Atlas, and PySpark for distributed data processing. As a result, we were able to create an interactive dashboard using MongoDB Atlas Charts which visualizes the listening history of users in a friend group, providing insights into their music preferences and listening habits.
+We implemented a fully automated data pipeline was created in Apache Airflow, leveraging Google Cloud Composer, MongoDB Atlas, and PySpark for distributed data processing. As a result, we were able to create an interactive dashboard using MongoDB Atlas Charts.
 
 <p align="center">
   <kbd><img src="images//SpotifyWeeklyRecap.png" width=600></img></kbd>
-</p><p align="center"><em>Figure 7: A Dynamic Dashboard To Share Music Taste with Friends</a></em></p></a></em></p>
+</p><p align="center"><em>Figure 7: Dashboard implementation with MongoDB Charts</a></em></p></a></em></p>
+
+A visualized listening history becomes available, allowing users to share their music preferences and listening habits with friends and family. The dashboard is automatically refreshed with the data from MongoDB Atlas in real-time, and serves as a platform to explore and compare music tastes as a shared experience.
