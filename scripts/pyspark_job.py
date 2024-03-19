@@ -1,24 +1,24 @@
-from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
+import sys
 from subprocess import call
-
-# Install Python packages
-call(["pip", "install", "kaleido==0.2.1", "plotly==5.19.0", "pandas", "numpy"])
-
+from pyspark.sql import functions as F
+from pyspark.sql import SparkSession
 import pandas
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import plotly.io as pio
 from google.cloud import storage
 from io import BytesIO
 
+# The following is intended to be before the import Plotly statements.
+# Install Python packages
+call(["pip", "install", "kaleido==0.2.1", "plotly==5.19.0", "pandas", "numpy"])
 # image_url = 'gs://msds697_final_project/piano.png'
+
+import plotly.io as pio
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 
 # Initialize Spark session
 spark = SparkSession.builder.appName("PlotlyOnDataproc").getOrCreate()
 
-df = spark.read.json("gs://spotify_jsons_for_mongodbatlas/pyspark/Albums_collection")
-
+df = spark.read.json("gs://bucket_for_dag/data/Tracks_collection.json")
 
 def min_max_normalize_tuple(tpl):
     normalized_tpl = []
@@ -33,16 +33,17 @@ def min_max_normalize_tuple(tpl):
 
         # Avoid division by zero
         if max_val - min_val != 0:
-            normalized_tpl = [(val - min_val) / (max_val - min_val) if isinstance(val, (int, float)) else val for val in tpl]
+            normalized_tpl = [(val - min_val) / (max_val - min_val)
+                              if isinstance(val, (int, float)) else val for val in tpl]
         else:
             # Handle the case when all numeric values in the tuple are the same
-            normalized_tpl = [0.0 if isinstance(val, (int, float)) else val for val in tpl]
+            normalized_tpl = [0.0 if isinstance(
+                val, (int, float)) else val for val in tpl]
     else:
         # If there are no numeric values in the tuple, keep it unchanged
         normalized_tpl = tpl
 
     return tuple(normalized_tpl)
-
 
 # Aggregate the data
 new_df = df.groupBy("user_name"). \
@@ -54,14 +55,16 @@ new_df = df.groupBy("user_name"). \
         F.mean("liveness").alias("liveness"),
         F.mean("valence").alias("valence"))
 new_df = new_df.withColumn("index", F.monotonically_increasing_id())
-new_df = new_df.select("index", "user_name", "speechiness", "loudness", "acousticness", "instrumentalness", "liveness", "valence", "energy")
+new_df = new_df.select("index", "user_name", "speechiness", "loudness",
+                       "acousticness", "instrumentalness", "liveness", "valence", "energy")
 rows = new_df.collect()
 data = [tuple(row) for row in rows]
 
 # Normalize the data
 normalized_data = [min_max_normalize_tuple(tpl) for tpl in data]
 
-columns = ["Observation", "Name", "Speechiness", "Loudness", "Acousticness", "Instrumentalness", "Liveness", "Valence", "Energy"]
+columns = ["Observation", "Name", "Speechiness", "Loudness",
+           "Acousticness", "Instrumentalness", "Liveness", "Valence", "Energy"]
 
 # Create a PySpark DataFrame
 df = spark.createDataFrame(normalized_data, columns)
@@ -128,20 +131,24 @@ fig.update_polars(dict(radialaxis=dict(range=[0, 1])), row=2, col=2)
 
 # Update annotations
 feature_description = ['<b>Speechiness:</b> The presence of spoken words in a track',
-                          '<b>Loudness:</b> The overall loudness of a track in decibels (dB)',
-                            '<b>Acousticness:</b> A confidence measure of track acoustic',
-                            '<b>Instrumentalness:</b> Predicts whether a track contains no vocals',
-                            '<b>Liveness:</b> Detects the presence of an audience in the recording',
-                            '<b>Valence:</b> Describes the musical positiveness conveyed by a track',
-                            '<b>Energy:</b> Represents a perceptual measure of intensity and activity']
+                       '<b>Loudness:</b> The overall loudness of a track in decibels (dB)',
+                       '<b>Acousticness:</b> A confidence measure of track acoustic',
+                       '<b>Instrumentalness:</b> Predicts whether a track contains no vocals',
+                       '<b>Liveness:</b> Detects the presence of an audience in the recording',
+                       '<b>Valence:</b> Describes the musical positiveness conveyed by a track',
+                       '<b>Energy:</b> Represents a perceptual measure of intensity and activity']
 
 
-annotations=[dict(text='<b>Bhumika</b>', x=0.125, y=1.07, showarrow=False, xref='paper', yref='paper', font=dict(size=20)),
-            dict(text='<b>Ireri</b>', x=0.5, y=1.07, showarrow=False, xref='paper', yref='paper', font=dict(size=20)),
-            dict(text='<b>Jessica</b>', x=0.85, y=1.07, showarrow=False, xref='paper', yref='paper', font=dict(size=20)),
-            dict(text='<b>Eren</b>', x=0.135, y=0.48, showarrow=False, xref='paper', yref='paper', font=dict(size=20)),
-            dict(text='<b>Yihan</b>', x=0.5, y=0.48, showarrow=False, xref='paper', yref='paper', font=dict(size=20))
-            ]
+annotations = [dict(text='<b>Bhumika</b>', x=0.125, y=1.07, showarrow=False, xref='paper', yref='paper', font=dict(size=20)),
+               dict(text='<b>Ireri</b>', x=0.5, y=1.07, showarrow=False,
+                    xref='paper', yref='paper', font=dict(size=20)),
+               dict(text='<b>Jessica</b>', x=0.85, y=1.07, showarrow=False,
+                    xref='paper', yref='paper', font=dict(size=20)),
+               dict(text='<b>Eren</b>', x=0.135, y=0.48, showarrow=False,
+                    xref='paper', yref='paper', font=dict(size=20)),
+               dict(text='<b>Yihan</b>', x=0.5, y=0.48, showarrow=False,
+                    xref='paper', yref='paper', font=dict(size=20))
+               ]
 
 annotations.append(
     dict(text=feature_description[0],
@@ -255,10 +262,11 @@ img_bytes = BytesIO()
 pio.write_image(fig, img_bytes, format='png')
 img_bytes.seek(0)
 
-client = storage.Client()
-bucket = client.bucket('spotify_jsons_for_mongodbatlas')
-blob = bucket.blob('radar_chart.png')
-blob.upload_from_file(img_bytes, content_type='image/png')
 
+client = storage.Client()
+bucket = client.bucket('bucket_for_dag')
+blob = bucket.blob('images/radar_chart.png')
+blob.upload_from_file(img_bytes, content_type='image/png')
+print(f'Image has been saved to bucket_for_dag/images/radar_chart.png')
 # Stop the Spark session
 spark.stop()
