@@ -24,14 +24,15 @@ def get_authorization_code():
                            scope=SCOPE,
                            cache_path=cache_path)
 
-    print(f"Open the following URL in your browser: {sp_auth.get_authorize_url()}")
+    print(
+        f"Open the following URL in your browser: {sp_auth.get_authorize_url()}")
     redirected_url = input("Enter the URL you were redirected to: ")
 
     parsed_url = urlparse(redirected_url)
     code = parse_qs(parsed_url.query)['code'][0]
 
-    sp_auth.get_access_token(code)
-    #sp_auth.get_cached_token()
+    sp_auth.get_access_token(code, as_dict=False)
+    # sp_auth.get_cached_token()
     sp = Spotify(auth_manager=sp_auth)
 
     user = sp.current_user()
@@ -77,5 +78,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
