@@ -1,11 +1,15 @@
 from pymongo import MongoClient
+from pymongo.server_api import ServerApi
+import os
 
 # Your MongoDB Atlas connection string
-mongo_uri = "mongodb+srv://erenbardak:scWEeqdIh8oFZdnm@cluster0.5nawz27.mongodb.net/erenbardak?retryWrites=true&w=majority"
-client = MongoClient(mongo_uri)
+# Define it in the environment variables
+mongo_uri = os.getenv("MONGO_URI")
+
+client = MongoClient(mongo_uri, server_api=ServerApi('1'))
 
 # Select your database
-db = client['projectspotify']
+db = client['Spotify-dds2024']
 
 # Raw data collection
 rawdata_collection = db['rawdata_recentlyplayed']
