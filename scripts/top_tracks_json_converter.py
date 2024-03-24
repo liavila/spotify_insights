@@ -12,6 +12,7 @@ from pathlib import Path
 # with open(PATH/'top_tracks_data.json', 'r', encoding='utf-8') as file:
 #     data = json.load(file)
 
+# Set the bucket name
 gcs_bucket_dag = 'bucket_for_dag'
 storage_client = storage.Client()
 
