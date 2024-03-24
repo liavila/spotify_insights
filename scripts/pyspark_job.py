@@ -15,10 +15,13 @@ import plotly.io as pio
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 
+# Set the bucket name
+gcs_bucket_dag = 'bucket_for_dag'
+
 # Initialize Spark session
 spark = SparkSession.builder.appName("PlotlyOnDataproc").getOrCreate()
 
-df = spark.read.json("gs://bucket_for_dag/data/Tracks_collection.json")
+df = spark.read.json(f"gs://{gcs_bucket_dag}/data/Tracks_collection.json")
 
 def min_max_normalize_tuple(tpl):
     normalized_tpl = []
@@ -264,9 +267,9 @@ img_bytes.seek(0)
 
 
 client = storage.Client()
-bucket = client.bucket('bucket_for_dag')
+bucket = client.bucket(gcs_bucket_dag)
 blob = bucket.blob('images/radar_chart.png')
 blob.upload_from_file(img_bytes, content_type='image/png')
-print(f'Image has been saved to bucket_for_dag/images/radar_chart.png')
+print(f'Image has been saved to {gcs_bucket_dag}/images/radar_chart.png')
 # Stop the Spark session
 spark.stop()
