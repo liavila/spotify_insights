@@ -24,7 +24,7 @@ def load_json(file_name):
 
     # Download file content as a string
     file_content = gcs_hook.download(
-        bucket_name='bucket_for_dag', object_name=destination_path)
+        bucket_name=gcs_bucket_dag, object_name=destination_path)
 
     # Parse the JSON string and return the data
     return json.loads(file_content)
