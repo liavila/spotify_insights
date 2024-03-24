@@ -14,7 +14,7 @@ import pytz
 # with open(PATH/'recently_played_data.json', 'r', encoding='utf-8') as f:
 #     data = json.load(f)
 
-# Define it in the environment variables
+# Set the bucket name
 gcs_bucket_dag = 'bucket_for_dag'
 
 storage_client = storage.Client()
